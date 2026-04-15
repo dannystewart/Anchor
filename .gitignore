@@ -1,0 +1,33 @@
+# Build artifacts
+.build/
+build/
+DerivedData/
+.swiftlint_cache/
+
+# Swift package files
+.swiftpm/
+*.xcodeproj/xcuserdata/
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+**/UserInterfaceState.xcuserstate
+Packages/
+
+# Local development
+.claude/
+.cursor/rules/
+.cursorindexingignore
+.DS_Store
+.env
+.specstory/
+*.tmp
+**/node_modules
+Chats
+Config/BuildNumber.xcconfig
+Config/Secrets.xcconfig
+deno.lock
+Documentation/LiquidGlass
+Generated/
+package-lock.json
+release/
+Screenshot*.png
+supabase/.temp

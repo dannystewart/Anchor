@@ -1,0 +1,5 @@
+project: Anchor.xcodeproj
+schemes:
+  - Anchor
+relative_results: true
+retain_codable_properties: true
