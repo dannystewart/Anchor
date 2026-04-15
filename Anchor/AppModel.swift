@@ -7,6 +7,7 @@ final class AppModel {
     static let shared: AppModel = .init()
 
     private static let taskKey = "currentTask"
+    private static let timerEndDateKey = "timerEndDate"
 
     var currentTask: String = UserDefaults.standard.string(forKey: taskKey) ?? "" {
         didSet {
@@ -35,31 +36,28 @@ final class AppModel {
         }
     }
 
-    private init() {}
+    private init() {
+        // Restore a timer that was running before the app quit
+        if
+            let savedEndDate = UserDefaults.standard.object(forKey: AppModel.timerEndDateKey) as? Date,
+            savedEndDate.timeIntervalSinceNow > 0
+        {
+            self.timerEndDate = savedEndDate
+            self.timeRemaining = Int(savedEndDate.timeIntervalSinceNow.rounded(.up))
+            self.startTimerLoop(endDate: savedEndDate)
+        }
+    }
 
     func startTimer(hours: Int, minutes: Int) {
         let totalSeconds = hours * 3600 + minutes * 60
         guard totalSeconds > 0 else { return }
 
-        self.timerEndDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
+        let endDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
+        self.timerEndDate = endDate
         self.timeRemaining = totalSeconds
+        UserDefaults.standard.set(endDate, forKey: AppModel.timerEndDateKey)
 
-        self.timerTask?.cancel()
-        self.timerTask = Task { @MainActor in
-            while !Task.isCancelled {
-                // Sleep in short increments so we respond quickly to cancellation
-                try? await Task.sleep(for: .milliseconds(500))
-                guard !Task.isCancelled, let endDate = self.timerEndDate else { break }
-
-                let remaining = Int(endDate.timeIntervalSinceNow.rounded(.up))
-                if remaining <= 0 {
-                    self.timeRemaining = 0
-                    self.timerEndDate = nil
-                    break
-                }
-                self.timeRemaining = remaining
-            }
-        }
+        self.startTimerLoop(endDate: endDate)
     }
 
     func stopTimer() {
@@ -67,5 +65,28 @@ final class AppModel {
         self.timerTask = nil
         self.timerEndDate = nil
         self.timeRemaining = 0
+        UserDefaults.standard.removeObject(forKey: AppModel.timerEndDateKey)
+    }
+
+    // MARK: - Private
+
+    private func startTimerLoop(endDate: Date) {
+        self.timerTask?.cancel()
+        self.timerTask = Task { @MainActor in
+            while !Task.isCancelled {
+                // Sleep in short increments so we respond quickly to cancellation
+                try? await Task.sleep(for: .milliseconds(500))
+                guard !Task.isCancelled, self.timerEndDate != nil else { break }
+
+                let remaining = Int(endDate.timeIntervalSinceNow.rounded(.up))
+                if remaining <= 0 {
+                    self.timeRemaining = 0
+                    self.timerEndDate = nil
+                    UserDefaults.standard.removeObject(forKey: AppModel.timerEndDateKey)
+                    break
+                }
+                self.timeRemaining = remaining
+            }
+        }
     }
 }
