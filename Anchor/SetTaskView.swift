@@ -6,10 +6,9 @@ struct SetTaskView: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("What are you working on?")
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(.headline)
 
             TextField("e.g. Finish the quarterly report", text: self.$taskText)
                 .textFieldStyle(.roundedBorder)
@@ -26,8 +25,8 @@ struct SetTaskView: View {
                     .disabled(self.taskText.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
-        .padding(24)
-        .frame(width: 380)
+        .padding(16)
+        .frame(width: 300)
         .onAppear {
             self.taskText = self.appModel.currentTask
             self.isFocused = true
