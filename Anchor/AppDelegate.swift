@@ -6,6 +6,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem! = nil
     private var setTaskPopover: NSPopover? = nil
+    private var setTimerPopover: NSPopover? = nil
     private var menuBarLabel: NSHostingView<MenuBarLabel>? = nil
     private let appModel: AppModel = .shared
 
@@ -19,8 +20,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func updateStatusItemDisplay() {
-        self.menuBarLabel?.rootView = MenuBarLabel(task: self.appModel.currentTask)
-        self.statusItem.length = self.labelWidth(for: self.appModel.currentTask)
+        let timerString = self.appModel.timerDisplayString
+        self.menuBarLabel?.rootView = MenuBarLabel(task: self.appModel.currentTask, timerString: timerString)
+        self.statusItem.length = self.labelWidth(for: self.appModel.currentTask, timerString: timerString)
     }
 
     // MARK: - Observation of AppModel
@@ -28,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func startObservingModel() {
         withObservationTracking {
             _ = self.appModel.currentTask
+            _ = self.appModel.timeRemaining
         } onChange: {
             Task { @MainActor in
                 self.updateStatusItemDisplay()
@@ -36,7 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    // MARK: - Popover
+    // MARK: - Popovers
 
     func showSetTaskPopover() {
         guard let button = statusItem.button else { return }
@@ -49,6 +52,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.setTaskPopover = nil
         }
 
+        // Close timer popover if open
+        self.setTimerPopover?.close()
+
         let popover = NSPopover()
         let rootView = SetTaskView()
             .environment(self.appModel)
@@ -60,17 +66,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.setTaskPopover = popover
     }
 
+    func showSetTimerPopover() {
+        guard let button = statusItem.button else { return }
+
+        if let existing = setTimerPopover {
+            if existing.isShown {
+                existing.close()
+                return
+            }
+            self.setTimerPopover = nil
+        }
+
+        // Close task popover if open
+        self.setTaskPopover?.close()
+
+        let popover = NSPopover()
+        let rootView = SetTimerView()
+            .environment(self.appModel)
+        popover.contentViewController = NSHostingController(rootView: rootView)
+        popover.contentSize = NSSize(width: 240, height: 130)
+        popover.behavior = .transient
+        popover.delegate = self
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        self.setTimerPopover = popover
+    }
+
     // MARK: - Menu Actions
 
     @objc func openSetTask() {
         Task { @MainActor in
-            await Task.yield() // one runloop pass — lets NSMenu finish closing, zero perceptible delay
+            await Task.yield()
             self.showSetTaskPopover()
         }
     }
 
     @objc func clearTask() {
         self.appModel.currentTask = ""
+    }
+
+    @objc func openSetTimer() {
+        Task { @MainActor in
+            await Task.yield()
+            self.showSetTimerPopover()
+        }
+    }
+
+    @objc func stopTimer() {
+        self.appModel.stopTimer()
     }
 
     @objc func quitApp() {
@@ -83,7 +125,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         guard let button = statusItem.button else { return }
 
-        // Use a SwiftUI hosting view for perfectly centered layout
         button.title = ""
         button.image = nil
 
@@ -105,13 +146,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.updateStatusItemDisplay()
     }
 
-    private func labelWidth(for task: String) -> CGFloat {
+    private func labelWidth(for task: String, timerString: String? = nil) -> CGFloat {
         let font = NSFont.systemFont(ofSize: 14)
         let iconWidth: CGFloat = 18
         let spacing: CGFloat = 5
         let sidePadding: CGFloat = 16
-        guard !task.isEmpty else { return iconWidth + sidePadding }
-        let textWidth = ceil((task as NSString).size(withAttributes: [.font: font]).width)
+
+        let displayText: String = switch (!task.isEmpty, timerString != nil) {
+        case (true, true): "\(task) • \(timerString!)"
+        case (true, false): task
+        case (false, true): timerString!
+        case (false, false): ""
+        }
+
+        guard !displayText.isEmpty else { return iconWidth + sidePadding }
+        let textWidth = ceil((displayText as NSString).size(withAttributes: [.font: font]).width)
         return textWidth + spacing + iconWidth + sidePadding
     }
 }
@@ -122,17 +171,36 @@ extension AppDelegate: NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
 
-        let setTitle = "Set Task…"
-        let setItem = NSMenuItem(title: setTitle, action: #selector(openSetTask), keyEquivalent: "")
-        setItem.image = NSImage(systemSymbolName: "pencil.line", accessibilityDescription: nil)
-        setItem.target = self
-        menu.addItem(setItem)
+        let setTaskTitle = self.appModel.currentTask.isEmpty ? "Set Task…" : "Change Task…"
+        let setTaskItem = NSMenuItem(title: setTaskTitle, action: #selector(openSetTask), keyEquivalent: "")
+        setTaskItem.image = NSImage(systemSymbolName: "pencil.line", accessibilityDescription: nil)
+        setTaskItem.target = self
+        menu.addItem(setTaskItem)
 
         if !self.appModel.currentTask.isEmpty {
             let clearItem = NSMenuItem(title: "Clear Task", action: #selector(clearTask), keyEquivalent: "")
             clearItem.image = NSImage(systemSymbolName: "arrow.clockwise", accessibilityDescription: nil)
             clearItem.target = self
             menu.addItem(clearItem)
+        }
+
+        menu.addItem(.separator())
+
+        if self.appModel.isTimerRunning {
+            let changeTimerItem = NSMenuItem(title: "Change Timer…", action: #selector(openSetTimer), keyEquivalent: "")
+            changeTimerItem.image = NSImage(systemSymbolName: "timer", accessibilityDescription: nil)
+            changeTimerItem.target = self
+            menu.addItem(changeTimerItem)
+
+            let stopTimerItem = NSMenuItem(title: "Reset Timer", action: #selector(stopTimer), keyEquivalent: "")
+            stopTimerItem.image = NSImage(systemSymbolName: "stop.circle", accessibilityDescription: nil)
+            stopTimerItem.target = self
+            menu.addItem(stopTimerItem)
+        } else {
+            let setTimerItem = NSMenuItem(title: "Set Timer…", action: #selector(openSetTimer), keyEquivalent: "")
+            setTimerItem.image = NSImage(systemSymbolName: "timer", accessibilityDescription: nil)
+            setTimerItem.target = self
+            menu.addItem(setTimerItem)
         }
 
         menu.addItem(.separator())
@@ -147,7 +215,12 @@ extension AppDelegate: NSMenuDelegate {
 // MARK: NSPopoverDelegate
 
 extension AppDelegate: NSPopoverDelegate {
-    func popoverDidClose(_: Notification) {
-        self.setTaskPopover = nil
+    func popoverDidClose(_ notification: Notification) {
+        guard let popover = notification.object as? NSPopover else { return }
+        if popover === self.setTaskPopover {
+            self.setTaskPopover = nil
+        } else if popover === self.setTimerPopover {
+            self.setTimerPopover = nil
+        }
     }
 }
