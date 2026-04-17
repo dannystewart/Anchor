@@ -9,8 +9,9 @@ Anchor puts an icon in your menu bar that lets you set a current task and/or tim
 ### Setting a task and timer
 
 <table>
-    <td><img src="Images/SetTask.png" alt="Anchor's Set Task popover"></img></td>
-    <td><img src="Images/SetTimer.png" alt="Anchor's Set Timer popover"></img></td>
+    <td><img src="Images/AnchorMenu.png" alt="Anchor's dropdown menu" height="200"></img></td>
+    <td><img src="Images/SetTask.png" alt="Anchor's Set Task popover" height="200"></img></td>
+    <td><img src="Images/SetTimer.png" alt="Anchor's Set Timer popover" height="200"></img></td>
 </table>
 
 ### Menu bar showing an active task and/or timer
