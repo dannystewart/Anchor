@@ -29,5 +29,6 @@ Documentation/LiquidGlass
 Generated/
 package-lock.json
 release/
+releases/
 Screenshot*.png
 supabase/.temp
