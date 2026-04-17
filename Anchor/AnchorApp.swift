@@ -1,4 +1,7 @@
+import AppKit
 import SwiftUI
+
+// MARK: - AnchorApp
 
 @main
 struct AnchorApp: App {

@@ -3,6 +3,8 @@ import SwiftUI
 struct SetTimerView: View {
     enum Field { case hours, minutes }
 
+    static let popoverWidth: CGFloat = 200
+
     @Environment(AppModel.self) private var appModel
     @State private var hoursText = ""
     @State private var minutesText = ""
@@ -16,7 +18,7 @@ struct SetTimerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Set a Timer")
+            Text("Start a Timer")
                 .font(.headline)
 
             HStack(spacing: 6) {
@@ -58,7 +60,7 @@ struct SetTimerView: View {
             }
         }
         .padding(16)
-        .frame(width: 240)
+        .frame(width: SetTimerView.popoverWidth)
         .onAppear {
             if self.appModel.isTimerRunning {
                 let h = self.appModel.timeRemaining / 3600

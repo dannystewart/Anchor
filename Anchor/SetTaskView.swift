@@ -1,16 +1,18 @@
 import SwiftUI
 
 struct SetTaskView: View {
+    static let popoverWidth: CGFloat = 330
+
     @Environment(AppModel.self) private var appModel
     @State private var taskText = ""
     @FocusState private var isFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("What are you working on?")
+            Text("What should you be working on right now?")
                 .font(.headline)
 
-            TextField("e.g. Finish the quarterly report", text: self.$taskText)
+            TextField("e.g. Finish the TPS reports", text: self.$taskText)
                 .textFieldStyle(.roundedBorder)
                 .focused(self.$isFocused)
                 .onSubmit { self.save() }
@@ -26,7 +28,7 @@ struct SetTaskView: View {
             }
         }
         .padding(16)
-        .frame(width: 300)
+        .frame(width: SetTaskView.popoverWidth)
         .onAppear {
             self.taskText = self.appModel.currentTask
             self.isFocused = true

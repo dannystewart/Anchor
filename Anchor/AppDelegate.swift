@@ -59,7 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let rootView = SetTaskView()
             .environment(self.appModel)
         popover.contentViewController = NSHostingController(rootView: rootView)
-        popover.contentSize = NSSize(width: 300, height: 148)
+        popover.contentSize = NSSize(width: SetTaskView.popoverWidth, height: 148)
         popover.behavior = .transient
         popover.delegate = self
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
@@ -84,7 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let rootView = SetTimerView()
             .environment(self.appModel)
         popover.contentViewController = NSHostingController(rootView: rootView)
-        popover.contentSize = NSSize(width: 240, height: 130)
+        popover.contentSize = NSSize(width: SetTimerView.popoverWidth, height: 130)
         popover.behavior = .transient
         popover.delegate = self
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
@@ -184,7 +184,9 @@ extension AppDelegate: NSMenuDelegate {
             menu.addItem(clearItem)
         }
 
-        menu.addItem(.separator())
+        if !self.appModel.currentTask.isEmpty || self.appModel.isTimerRunning {
+            menu.addItem(.separator())
+        }
 
         if self.appModel.isTimerRunning {
             let changeTimerItem = NSMenuItem(title: "Change Timer…", action: #selector(openSetTimer), keyEquivalent: "")
@@ -197,7 +199,7 @@ extension AppDelegate: NSMenuDelegate {
             stopTimerItem.target = self
             menu.addItem(stopTimerItem)
         } else {
-            let setTimerItem = NSMenuItem(title: "Set Timer…", action: #selector(openSetTimer), keyEquivalent: "")
+            let setTimerItem = NSMenuItem(title: "Start Timer…", action: #selector(openSetTimer), keyEquivalent: "")
             setTimerItem.image = NSImage(systemSymbolName: "timer", accessibilityDescription: nil)
             setTimerItem.target = self
             menu.addItem(setTimerItem)
