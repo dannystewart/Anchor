@@ -3,7 +3,7 @@ import SwiftUI
 struct SetTaskView: View {
     static let popoverWidth: CGFloat = 330
 
-    @Environment(AppModel.self) private var appModel
+    @Environment(AnchorModel.self) private var anchorModel
     @State private var taskText = ""
     @FocusState private var isFocused: Bool
 
@@ -30,7 +30,7 @@ struct SetTaskView: View {
         .padding(16)
         .frame(width: SetTaskView.popoverWidth)
         .onAppear {
-            self.taskText = self.appModel.currentTask
+            self.taskText = self.anchorModel.currentTask
             self.isFocused = true
         }
     }
@@ -38,7 +38,7 @@ struct SetTaskView: View {
     private func save() {
         let trimmed = self.taskText.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
-        self.appModel.currentTask = trimmed
+        self.anchorModel.currentTask = trimmed
         self.closeWindow()
     }
 

@@ -3,15 +3,15 @@ import Observation
 
 @MainActor
 @Observable
-final class AppModel {
-    static let shared: AppModel = .init()
+final class AnchorModel {
+    static let shared: AnchorModel = .init()
 
     private static let taskKey = "currentTask"
     private static let timerEndDateKey = "timerEndDate"
 
     var currentTask: String = UserDefaults.standard.string(forKey: taskKey) ?? "" {
         didSet {
-            UserDefaults.standard.set(self.currentTask, forKey: AppModel.taskKey)
+            UserDefaults.standard.set(self.currentTask, forKey: AnchorModel.taskKey)
         }
     }
 
@@ -39,7 +39,7 @@ final class AppModel {
     private init() {
         // Restore a timer that was running before the app quit
         if
-            let savedEndDate = UserDefaults.standard.object(forKey: AppModel.timerEndDateKey) as? Date,
+            let savedEndDate = UserDefaults.standard.object(forKey: AnchorModel.timerEndDateKey) as? Date,
             savedEndDate.timeIntervalSinceNow > 0
         {
             self.timerEndDate = savedEndDate
@@ -55,7 +55,7 @@ final class AppModel {
         let endDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
         self.timerEndDate = endDate
         self.timeRemaining = totalSeconds
-        UserDefaults.standard.set(endDate, forKey: AppModel.timerEndDateKey)
+        UserDefaults.standard.set(endDate, forKey: AnchorModel.timerEndDateKey)
 
         self.startTimerLoop(endDate: endDate)
     }
@@ -65,7 +65,7 @@ final class AppModel {
         self.timerTask = nil
         self.timerEndDate = nil
         self.timeRemaining = 0
-        UserDefaults.standard.removeObject(forKey: AppModel.timerEndDateKey)
+        UserDefaults.standard.removeObject(forKey: AnchorModel.timerEndDateKey)
     }
 
     // MARK: - Private
@@ -82,7 +82,7 @@ final class AppModel {
                 if remaining <= 0 {
                     self.timeRemaining = 0
                     self.timerEndDate = nil
-                    UserDefaults.standard.removeObject(forKey: AppModel.timerEndDateKey)
+                    UserDefaults.standard.removeObject(forKey: AnchorModel.timerEndDateKey)
                     break
                 }
                 self.timeRemaining = remaining

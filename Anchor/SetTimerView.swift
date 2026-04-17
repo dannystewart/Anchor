@@ -5,7 +5,7 @@ struct SetTimerView: View {
 
     static let popoverWidth: CGFloat = 200
 
-    @Environment(AppModel.self) private var appModel
+    @Environment(AnchorModel.self) private var anchorModel
     @State private var hoursText = ""
     @State private var minutesText = ""
     @FocusState private var focusedField: Field?
@@ -62,9 +62,9 @@ struct SetTimerView: View {
         .padding(16)
         .frame(width: SetTimerView.popoverWidth)
         .onAppear {
-            if self.appModel.isTimerRunning {
-                let h = self.appModel.timeRemaining / 3600
-                let m = (self.appModel.timeRemaining % 3600) / 60
+            if self.anchorModel.isTimerRunning {
+                let h = self.anchorModel.timeRemaining / 3600
+                let m = (self.anchorModel.timeRemaining % 3600) / 60
                 if h > 0 { self.hoursText = "\(h)" }
                 if m > 0 { self.minutesText = "\(m)" }
             }
@@ -78,7 +78,7 @@ struct SetTimerView: View {
         let h = Int(self.hoursText) ?? 0
         let m = Int(self.minutesText) ?? 0
         guard h + m > 0 else { return }
-        self.appModel.startTimer(hours: h, minutes: m)
+        self.anchorModel.startTimer(hours: h, minutes: m)
         self.closeWindow()
     }
 
