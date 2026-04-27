@@ -53,11 +53,13 @@ final class AnchorModel {
         guard totalSeconds > 0 else { return }
 
         let endDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
-        self.timerEndDate = endDate
-        self.timeRemaining = totalSeconds
-        UserDefaults.standard.set(endDate, forKey: AnchorModel.timerEndDateKey)
+        // Round up to the next whole second boundary so timer ticks align with the system clock
+        let alignedEndDate = Date(timeIntervalSinceReferenceDate: ceil(endDate.timeIntervalSinceReferenceDate))
+        self.timerEndDate = alignedEndDate
+        self.timeRemaining = Int(alignedEndDate.timeIntervalSinceNow.rounded(.up))
+        UserDefaults.standard.set(alignedEndDate, forKey: AnchorModel.timerEndDateKey)
 
-        self.startTimerLoop(endDate: endDate)
+        self.startTimerLoop(endDate: alignedEndDate)
     }
 
     func stopTimer() {
@@ -74,10 +76,6 @@ final class AnchorModel {
         self.timerTask?.cancel()
         self.timerTask = Task { @MainActor in
             while !Task.isCancelled {
-                // Sleep in short increments so we respond quickly to cancellation
-                try? await Task.sleep(for: .milliseconds(500))
-                guard !Task.isCancelled, self.timerEndDate != nil else { break }
-
                 let remaining = Int(endDate.timeIntervalSinceNow.rounded(.up))
                 if remaining <= 0 {
                     self.timeRemaining = 0
@@ -85,7 +83,18 @@ final class AnchorModel {
                     UserDefaults.standard.removeObject(forKey: AnchorModel.timerEndDateKey)
                     break
                 }
-                self.timeRemaining = remaining
+                if remaining != self.timeRemaining {
+                    self.timeRemaining = remaining
+                }
+
+                // Sleep until the next exact second boundary to stay aligned with the system clock
+                let now = Date()
+                let currentTime = now.timeIntervalSinceReferenceDate
+                let nextSecond = floor(currentTime) + 1
+                let sleepSeconds = nextSecond - currentTime
+                let sleepNanos = UInt64(sleepSeconds * 1_000_000_000)
+                try? await Task.sleep(nanoseconds: max(sleepNanos, 1))
+                guard !Task.isCancelled, self.timerEndDate != nil else { break }
             }
         }
     }
