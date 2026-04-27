@@ -22,13 +22,12 @@ struct MenuBarLabel: View {
         HStack(spacing: 5) {
             if !self.displayText.isEmpty {
                 Text(self.displayText)
-                    .font(.system(size: 14).monospacedDigit())
+                    .font(.system(size: 13).monospacedDigit())
                     .lineLimit(1)
+                    .offset(x: -1, y: -0.5)
             }
             Image(systemName: "sailboat.fill")
                 .font(.system(size: 12))
-                .offset(y: 1)
         }
-        .offset(y: -1)
     }
 }
