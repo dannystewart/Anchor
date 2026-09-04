@@ -16,6 +16,7 @@ struct AnchorApp: App {
 
 // MARK: - AppDelegate
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem! = nil
     private var setTaskPopover: NSPopover? = nil
@@ -44,6 +45,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         withObservationTracking {
             _ = self.anchorModel.currentTask
             _ = self.anchorModel.timeRemaining
+            _ = self.anchorModel.isTimerExpired
+            _ = self.anchorModel.timerFlashVisible
         } onChange: {
             Task { @MainActor in
                 self.updateStatusItemDisplay()
@@ -197,11 +200,13 @@ extension AppDelegate: NSMenuDelegate {
             menu.addItem(clearItem)
         }
 
-        if !self.anchorModel.currentTask.isEmpty || self.anchorModel.isTimerRunning {
+        let timerActive = self.anchorModel.isTimerRunning || self.anchorModel.isTimerExpired
+
+        if !self.anchorModel.currentTask.isEmpty || timerActive {
             menu.addItem(.separator())
         }
 
-        if self.anchorModel.isTimerRunning {
+        if timerActive {
             let changeTimerItem = NSMenuItem(title: "Change Timer…", action: #selector(openSetTimer), keyEquivalent: "")
             changeTimerItem.image = NSImage(systemSymbolName: "timer", accessibilityDescription: nil)
             changeTimerItem.target = self

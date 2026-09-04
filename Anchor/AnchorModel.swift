@@ -18,22 +18,29 @@ final class AnchorModel {
     // MARK: - Timer
 
     private(set) var timeRemaining: Int = 0 // seconds; 0 means no active timer
+    private(set) var isTimerExpired: Bool = false
+    private(set) var timerFlashVisible: Bool = true
 
     private var timerEndDate: Date? = nil
     private var timerTask: Task<Void, Never>? = nil
+    private var flashTask: Task<Void, Never>? = nil
 
     var isTimerRunning: Bool { self.timeRemaining > 0 }
 
     var timerDisplayString: String? {
-        guard self.timeRemaining > 0 else { return nil }
-        let h = self.timeRemaining / 3600
-        let m = (self.timeRemaining % 3600) / 60
-        let s = self.timeRemaining % 60
-        if h > 0 {
-            return String(format: "%d:%02d:%02d", h, m, s)
-        } else {
-            return String(format: "%d:%02d", m, s)
+        if self.timeRemaining > 0 {
+            let h = self.timeRemaining / 3600
+            let m = (self.timeRemaining % 3600) / 60
+            let s = self.timeRemaining % 60
+            if h > 0 {
+                return String(format: "%d:%02d:%02d", h, m, s)
+            } else {
+                return String(format: "%d:%02d", m, s)
+            }
+        } else if self.isTimerExpired {
+            return self.timerFlashVisible ? "0:00" : nil
         }
+        return nil
     }
 
     private init() {
@@ -52,6 +59,8 @@ final class AnchorModel {
         let totalSeconds = hours * 3600 + minutes * 60
         guard totalSeconds > 0 else { return }
 
+        self.cancelFlash()
+
         let endDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
         // Round up to the next whole second boundary so timer ticks align with the system clock
         let alignedEndDate = Date(timeIntervalSinceReferenceDate: ceil(endDate.timeIntervalSinceReferenceDate))
@@ -65,12 +74,32 @@ final class AnchorModel {
     func stopTimer() {
         self.timerTask?.cancel()
         self.timerTask = nil
+        self.cancelFlash()
         self.timerEndDate = nil
         self.timeRemaining = 0
         UserDefaults.standard.removeObject(forKey: AnchorModel.timerEndDateKey)
     }
 
     // MARK: - Private
+
+    private func cancelFlash() {
+        self.flashTask?.cancel()
+        self.flashTask = nil
+        self.isTimerExpired = false
+        self.timerFlashVisible = true
+    }
+
+    private func startExpiredFlash() {
+        self.isTimerExpired = true
+        self.timerFlashVisible = true
+        self.flashTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { break }
+                self.timerFlashVisible.toggle()
+            }
+        }
+    }
 
     private func startTimerLoop(endDate: Date) {
         self.timerTask?.cancel()
@@ -81,6 +110,7 @@ final class AnchorModel {
                     self.timeRemaining = 0
                     self.timerEndDate = nil
                     UserDefaults.standard.removeObject(forKey: AnchorModel.timerEndDateKey)
+                    self.startExpiredFlash()
                     break
                 }
                 if remaining != self.timeRemaining {
