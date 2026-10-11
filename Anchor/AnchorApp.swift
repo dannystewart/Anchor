@@ -18,10 +18,10 @@ struct AnchorApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem! = nil
-    private var setTaskPopover: NSPopover? = nil
-    private var setTimerPopover: NSPopover? = nil
-    private var menuBarLabel: NSHostingView<MenuBarLabel>? = nil
+    private var statusItem: NSStatusItem!
+    private var setTaskPopover: NSPopover?
+    private var setTimerPopover: NSPopover?
+    private var menuBarLabel: NSHostingView<MenuBarLabel>?
     private let anchorModel: AnchorModel = .shared
 
     func applicationWillFinishLaunching(_: Notification) {
