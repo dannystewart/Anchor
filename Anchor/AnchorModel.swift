@@ -21,9 +21,9 @@ final class AnchorModel {
     private(set) var isTimerExpired: Bool = false
     private(set) var timerFlashVisible: Bool = true
 
-    private var timerEndDate: Date? = nil
-    private var timerTask: Task<Void, Never>? = nil
-    private var flashTask: Task<Void, Never>? = nil
+    private var timerEndDate: Date?
+    private var timerTask: Task<Void, Never>?
+    private var flashTask: Task<Void, Never>?
 
     var isTimerRunning: Bool { self.timeRemaining > 0 }
 
