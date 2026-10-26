@@ -74,8 +74,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let popover = NSPopover()
         let rootView = SetTaskView()
             .environment(self.anchorModel)
-        popover.contentViewController = NSHostingController(rootView: rootView)
-        popover.contentSize = NSSize(width: SetTaskView.popoverWidth, height: 148)
+            .fixedSize(horizontal: false, vertical: true)
+        let hostingController = NSHostingController(rootView: rootView)
+        // Resolve the SwiftUI layout before presentation, and keep the hosting
+        // controller from resizing the popover during its opening animation.
+        hostingController.sizingOptions = []
+        let contentSize = hostingController.view.fittingSize
+        hostingController.view.setFrameSize(contentSize)
+        hostingController.view.layoutSubtreeIfNeeded()
+        popover.contentViewController = hostingController
+        popover.contentSize = contentSize
         popover.behavior = .transient
         popover.delegate = self
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
