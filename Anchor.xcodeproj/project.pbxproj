@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3019DDC32F9040C7003DA620 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3019DDC22F9040C7003DA620 /* Assets.xcassets */; };
 		3019DDCA2F904215003DA620 /* AnchorIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 3019DDC92F904215003DA620 /* AnchorIcon.icon */; };
+		307DE637308F881200DE703E /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 307DE636308F881200DE703E /* AppIntents.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +17,7 @@
 		3019DDC22F9040C7003DA620 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3019DDC92F904215003DA620 /* AnchorIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AnchorIcon.icon; sourceTree = "<group>"; };
 		3019DDCB2F904253003DA620 /* BuildNumber.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = BuildNumber.xcconfig; path = Config/BuildNumber.xcconfig; sourceTree = "<group>"; };
+		307DE636308F881200DE703E /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				307DE637308F881200DE703E /* AppIntents.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +48,7 @@
 				3019DDC92F904215003DA620 /* AnchorIcon.icon */,
 				3019DDC22F9040C7003DA620 /* Assets.xcassets */,
 				3019DDCB2F904253003DA620 /* BuildNumber.xcconfig */,
+				307DE635308F881200DE703E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,6 +58,14 @@
 				3019DDBB2F9040C5003DA620 /* Anchor.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		307DE635308F881200DE703E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				307DE636308F881200DE703E /* AppIntents.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -268,7 +280,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3019DDCB2F904253003DA620 /* BuildNumber.xcconfig */;
 			buildSettings = {
-				SUPPORTS_MACCATALYST = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AnchorIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -288,11 +299,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.6;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dannystewart.Anchor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -305,7 +318,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3019DDCB2F904253003DA620 /* BuildNumber.xcconfig */;
 			buildSettings = {
-				SUPPORTS_MACCATALYST = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AnchorIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -325,11 +337,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.6;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dannystewart.Anchor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
